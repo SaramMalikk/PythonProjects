@@ -1,0 +1,146 @@
+/* General Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(120deg, #8e44ad, #3498db);
+    color: #fff;
+    overflow: hidden; /* Prevent scrolling issues */
+}
+
+/* Container Styles */
+.container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    width: 400px;
+    backdrop-filter: blur(15px);
+}
+
+/* Title */
+.game-title {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #fff;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Game Board */
+.game-board {
+    display: grid;
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 15px;
+    margin-bottom: 20px;
+}
+
+.cell {
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: bold;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.25);
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.cell:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.cell.X {
+    color: #e74c3c;
+    text-shadow: 0 5px 15px rgba(231, 76, 60, 0.5);
+}
+
+.cell.O {
+    color: #1abc9c;
+    text-shadow: 0 5px 15px rgba(26, 188, 156, 0.5);
+}
+
+/* Winner Overlay */
+.winner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    overflow: hidden; /* Prevent scroll issues */
+}
+
+.winner-content {
+    text-align: center;
+    color: #f1c40f;
+    animation: popUp 0.5s ease;
+    max-width: 90%; /* Prevent overflow on small screens */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.hidden {
+    display: none;
+}
+
+.winner-message {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    word-wrap: break-word; /* Handle long text */
+    line-height: 1.5;
+}
+
+/* Confetti Canvas */
+#confettiCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Ensure clicks go through the canvas */
+}
+
+/* Restart Button */
+.btn {
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(145deg, #f39c12, #d35400);
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Pop-Up Animation */
+@keyframes popUp {
+    from {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
