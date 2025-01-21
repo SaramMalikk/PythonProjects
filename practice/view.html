@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Image</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #343a40;
+        }
+
+        h4 {
+            color: #495057;
+        }
+
+        #image-name {
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        #view-image-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+
+        #view-image-btn:hover {
+            background-color: #0056b3;
+        }
+
+        #image-viewer {
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            max-height: 500px;
+        }
+
+        .alert {
+            margin-top: 20px;
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 class="mt-5">Image Viewer</h2>
+
+    <!-- Image display area -->
+    <div class="mt-4 text-center">
+        <h4>Uploaded Image:</h4>
+        <img id="image-viewer" alt="Image" class="img-fluid" style="max-width: 100%; height: auto; display: none;">
+    </div>
+
+    <!-- Form to request the image -->
+    <div class="mt-4">
+        <h4>Enter Image Name:</h4>
+        <input type="text" id="image-name" class="form-control" placeholder="Enter the image name">
+        <button id="view-image-btn" class="btn btn-primary mt-3">View Image</button>
+        <div id="error-message" class="alert d-none">Image not found or error occurred!</div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const viewImageButton = document.getElementById('view-image-btn');
+        const imageNameInput = document.getElementById('image-name');
+        const imageViewer = document.getElementById('image-viewer');
+        const errorMessage = document.getElementById('error-message');
+
+        viewImageButton.addEventListener('click', function() {
+            const imageName = imageNameInput.value.trim();
+
+            if (imageName) {
+                fetch('http://127.0.0.1:5000/view_image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ "image_name": imageName })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.image_data) {
+                        imageViewer.src = 'data:image/png;base64,' + data.image_data; // Adjust image type if needed
+                        imageViewer.style.display = 'block';
+                        errorMessage.classList.add('d-none');
+                    } else {
+                        imageViewer.style.display = 'none';
+                        errorMessage.textContent = 'Image not found or error occurred!';
+                        errorMessage.classList.remove('d-none');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    imageViewer.style.display = 'none';
+                    errorMessage.textContent = 'An error occurred while fetching the image.';
+                    errorMessage.classList.remove('d-none');
+                });
+            } else {
+                alert('Please enter an image name.');
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Image</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #343a40;
+        }
+
+        h4 {
+            color: #495057;
+        }
+
+        #file-input {
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        #upload-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+
+        #upload-btn:hover {
+            background-color: #0056b3;
+        }
+
+        #response-message {
+            color: #495057;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 class="mt-5">Image Upload</h2>
+
+    <!-- File upload form -->
+    <div class="mt-4">
+        <h4>Select Image to Upload:</h4>
+        <input type="file" id="file-input" class="form-control" accept="image/*">
+        <button id="upload-btn" class="btn btn-primary mt-3">Upload</button>
+    </div>
+
+    <!-- Response message -->
+    <div class="mt-4">
+        <p id="response-message"></p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadButton = document.getElementById('upload-btn');
+        const fileInput = document.getElementById('file-input');
+        const responseMessage = document.getElementById('response-message');
+
+        uploadButton.addEventListener('click', function() {
+            const file = fileInput.files[0];  // Get the selected file
+
+            if (!file) {
+                responseMessage.textContent = "Please select a file.";
+                responseMessage.style.color = "red";
+                return;
+            }
+
+            // Create a FormData object to send the file
+            const formData = new FormData();
+            formData.append('image', file);  // 'image' matches the backend form field name
+
+            // Send file using Fetch API
+            fetch('http://127.0.0.1:5000/upload', {
+                method: 'POST',
+                body: formData  // FormData will automatically set the correct Content-Type
+            })
+            .then(response => response.json())  // Expect JSON response
+            .then(data => {
+                if (data.status === 'Image uploaded successfully!') {
+                    responseMessage.textContent = `${data.status}`;
+                    responseMessage.style.color = "green";
+                } else {
+                    responseMessage.textContent = `Error: ${data.status}`;
+                    responseMessage.style.color = "red";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                responseMessage.textContent = 'An error occurred while uploading the file.';
+                responseMessage.style.color = "red";
+            });
+        });
+    });
+</script>
+</body>
+</html>
+
+
