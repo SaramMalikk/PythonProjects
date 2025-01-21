@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product Category</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f0f8ff; /* Light blue background */
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            background-color: #ffffff; /* White background for the container */
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 600px; /* Limit the width of the form */
+            margin: 50px auto; /* Center the form on the page */
+        }
+
+        h2 {
+            color: #3498db; /* Light blue for the title */
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9; /* Darker blue on hover */
+        }
+
+        .alert {
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .alert-info {
+            background-color: #e7f5ff; /* Light blue background for info messages */
+            color: #3498db;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da; /* Light red background for error messages */
+            color: #e74c3c;
+        }
+
+        .alert-success {
+            background-color: #d4edda; /* Light green background for success messages */
+            color: #155724;
+        }
+
+        /* Style for the View Categories button */
+        .view-categories-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .view-categories-btn:hover {
+            background-color: #2980b9; /* Darker blue on hover */
+        }
+    </style>
+</head>
+<body>
+    <!-- View Categories Button -->
+    <a href="http://localhost:63342/Superstore/view_category.html" class="view-categories-btn">View Categories</a>
+
+    <div class="container">
+        <h2 class="text-center mb-4">Add Product Category</h2>
+        <form id="categoryForm">
+            <div class="form-group">
+                <label for="name">Category Name</label>
+                <input type="text" class="form-control" id="name" placeholder="Enter category name" required>
+            </div>
+            <div class="form-group">
+                <label for="des">Description</label>
+                <input type="text" class="form-control" id="des" placeholder="Enter category description" required>
+            </div>
+            <div class="form-group">
+                <label for="parentCategory">Parent Category</label>
+                <select class="form-control" id="parentCategory" required>
+                    <option value="">Select Parent Category</option>
+                </select>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="addCategory()">Add Category</button>
+        </form>
+
+        <!-- Display success or error messages -->
+        <div id="message" class="mt-4"></div>
+    </div>
+
+    <!-- JavaScript to handle form submission, validation, and API request -->
+    <script>
+        // Fetch parent categories from the server
+        function fetchParentCategories() {
+            fetch('http://127.0.0.1:5000/view_categories')
+            .then(response => response.json())
+            .then(data => {
+                const parentCategorySelect = document.getElementById('parentCategory');
+                // Clear the dropdown
+                parentCategorySelect.innerHTML = '<option value="">Select Parent Category</option>';
+
+                // Add categories to the dropdown
+                data.Category_info.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.Category_id; // Use Category_id for the value
+                    option.textContent = category.Category; // Display Category name
+                    parentCategorySelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching parent categories:', error);
+            });
+        }
+
+        // Call fetchParentCategories on page load
+        window.onload = fetchParentCategories;
+
+        // Add new category
+        function addCategory() {
+            // Clear previous messages
+            document.getElementById('message').innerHTML = '';
+
+            // Validate form fields
+            const name = document.getElementById('name').value.trim();
+            const des = document.getElementById('des').value.trim();
+            const parentCategory = document.getElementById('parentCategory').value;
+
+            if (!name || !des || !parentCategory) {
+                document.getElementById('message').innerHTML = '<div class="alert alert-danger">Please fill in all fields.</div>';
+                return;
+            }
+
+            const categoryData = {
+                name: name,
+                des: des,
+                parentCategory: parentCategory
+            };
+
+            fetch('http://127.0.0.1:5000/enter_categories', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(categoryData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Response data:", data); // Log for debugging
+
+                // Display success message from the server response
+                const messageDiv = document.getElementById('message');
+                if (data.Status) {  // If API returns a Status field
+                    messageDiv.innerHTML = `<div class="alert alert-success">${data.Status}</div>`;
+                } else {  // Fallback to show the entire response
+                    messageDiv.innerHTML = `<div class="alert alert-success">${JSON.stringify(data)}</div>`;
+                }
+
+                // Clear the form fields after successful submission
+                document.getElementById('categoryForm').reset();
+            })
+            .catch(error => {
+                console.error('Fetch error:', error); // Improved error logging
+                document.getElementById('message').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            });
+        }
+    </script>
+</body>
+</html>

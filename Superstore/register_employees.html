@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Employee</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f0f4f8;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 500px;
+            background-color: #ffffff;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            color: #333;
+            position: relative;
+        }
+
+        .view-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #3498db;
+            color: #ffffff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .view-button:hover {
+            background-color: #2980b9;
+        }
+
+        h2 {
+            font-size: 26px;
+            font-weight: 600;
+            color: #3498db;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #444;
+        }
+
+        .form-control {
+            font-size: 15px;
+            padding: 10px 12px;
+            border: 1px solid #dfe6e9;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0px 0px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            background-color: #3498db;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 15px;
+        }
+
+        .alert {
+            font-weight: 500;
+            padding: 12px;
+            border-radius: 5px;
+        }
+
+        .alert-success {
+            color: #27ae60;
+            background-color: #e8f5e9;
+            border: 1px solid #d4e8d4;
+        }
+
+        .alert-danger {
+            color: #e74c3c;
+            background-color: #fdecea;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="http://localhost:63342/Superstore/view_employees.html" class="view-button">View</a>
+        <h2>Register Employee</h2>
+        <form id="employeeForm">
+            <div class="form-group">
+                <label for="firstname">First Name</label>
+                <input type="text" class="form-control" id="firstname" placeholder="Enter first name" required>
+            </div>
+            <div class="form-group">
+                <label for="lastname">Last Name</label>
+                <input type="text" class="form-control" id="lastname" placeholder="Enter last name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="Enter email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="text" class="form-control" id="phone" placeholder="Enter phone number" required>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="registerEmployee()">Register Employee</button>
+        </form>
+
+        <div id="message"></div>
+    </div>
+
+    <script>
+        function registerEmployee() {
+            document.getElementById('message').innerHTML = '';
+
+            const firstname = document.getElementById('firstname').value.trim();
+            const lastname = document.getElementById('lastname').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+
+            if (!firstname || !lastname || !email || !phone) {
+                document.getElementById('message').innerHTML = '<div class="alert alert-danger">Please fill in all fields.</div>';
+                return;
+            }
+
+            const employeeData = {
+                firstname: firstname,
+                lastname: lastname,
+                email: email,
+                phone: phone
+            };
+
+            fetch('http://127.0.0.1:5000/enter_employee', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(employeeData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with status ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const messageDiv = document.getElementById('message');
+                messageDiv.innerHTML = `<div class="alert alert-success">${JSON.stringify(data)}</div>`;
+                document.getElementById('employeeForm').reset();
+            })
+            .catch(error => {
+                document.getElementById('message').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            });
+        }
+    </script>
+</body>
+</html>

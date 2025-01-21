@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superstore Dashboard</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Styling for basic elements */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f9f9fb;
+            color: #333;
+            font-size: 16px;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 250px;
+            background-color: #f1f7ff;
+            color: #333;
+            padding-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 1px solid #e0e6ef;
+            box-shadow: 3px 0px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar h2 {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #3498db;
+            font-weight: 700;
+        }
+
+        .sidebar button {
+            width: 85%;
+            padding: 12px;
+            margin: 8px 0;
+            font-size: 16px;
+            color: #3498db;
+            background-color: #ffffff;
+            border: 1px solid #e0e6ef;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            padding-left: 20px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar button:hover {
+            background-color: #e3f2fd;
+            color: #1d73b2;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar i {
+            margin-right: 10px;
+        }
+
+        /* Dropdown styling */
+        .dropdown {
+            width: 85%;
+            margin-top: 8px;
+        }
+
+        .dropdown-content {
+            display: none;
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .dropdown-content button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            color: #3498db;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-content button:hover {
+            background-color: #e3f2fd;
+            color: #1d73b2;
+        }
+
+        .dropdown.open .dropdown-content {
+            display: block;
+        }
+
+        /* Content area styling */
+        .content {
+            flex-grow: 1;
+            padding: 40px;
+            background-color: #ffffff;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none; /* Initially hide the iframe */
+        }
+
+        /* Welcome Message Styling */
+        .welcome-message {
+            text-align: center;
+            padding: 40px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 18px;
+            color: #3498db;
+        }
+
+        .welcome-message h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .welcome-message p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                padding: 15px 0;
+                flex-direction: row;
+                justify-content: space-around;
+                box-shadow: none;
+                border-right: none;
+                border-bottom: 1px solid #e0e6ef;
+            }
+
+            .sidebar button {
+                width: auto;
+                margin: 8px;
+                padding: 10px 15px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Superstore</h2>
+        <button onclick="navigateTo('employees')"><i class="fas fa-users"></i>EMPLOYEES</button>
+
+        <!-- Products button with dropdown -->
+        <div class="dropdown" id="dropdownProducts">
+            <button onclick="toggleDropdown('dropdownProducts')"><i class="fas fa-box"></i>PRODUCTS</button>
+            <div class="dropdown-content">
+                <button onclick="navigateTo('enter')"><i class="fas fa-plus-circle"></i>Enter</button>
+                <button onclick="navigateTo('view')"><i class="fas fa-eye"></i>View</button>
+                <button onclick="navigateTo('inventory')"><i class="fas fa-cogs"></i>INVENTORY</button> <!-- Moved inventory button here -->
+            </div>
+        </div>
+
+        <!-- Orders button with dropdown -->
+        <div class="dropdown" id="dropdownOrders">
+            <button onclick="toggleDropdown('dropdownOrders')"><i class="fas fa-shopping-cart"></i>ORDERS</button>
+            <div class="dropdown-content">
+                <button onclick="navigateTo('enter_order')"><i class="fas fa-plus-circle"></i>Enter Order</button>
+                <button onclick="navigateTo('view_order')"><i class="fas fa-eye"></i>View Orders</button>
+            </div>
+        </div>
+
+        <!-- Sales button with dropdown -->
+        <div class="dropdown" id="dropdownSales">
+            <button onclick="toggleDropdown('dropdownSales')"><i class="fas fa-dollar-sign"></i>SALES</button>
+            <div class="dropdown-content">
+                <button onclick="navigateTo('enter_sell')"><i class="fas fa-plus-circle"></i>Enter Sale</button>
+                <button onclick="navigateTo('view_sell')"><i class="fas fa-eye"></i>View Sales</button>
+            </div>
+        </div>
+
+        <!-- Categories and Suppliers buttons -->
+        <button onclick="navigateTo('categories')"><i class="fas fa-th"></i>CATEGORIES</button>
+        <button onclick="navigateTo('suppliers')"><i class="fas fa-truck"></i>SUPPLIERS</button>
+    </div>
+
+    <!-- Main content area -->
+    <div class="content">
+        <!-- Welcome Message -->
+        <div id="welcomeMessage" class="welcome-message">
+            <h1>Welcome to Superstore Dashboard</h1>
+            <p>Your one-stop solution for managing employees, products, orders, and more. Explore various features of the superstore with ease.</p>
+            <p>Navigate through different sections using the sidebar to manage your inventory, sales, categories, and suppliers effectively.</p>
+            <h1>Saram's Project</h1>
+        </div>
+        <iframe id="contentFrame" src="dashboard_overview.html"></iframe>
+    </div>
+
+    <!-- JavaScript for navigation -->
+    <script>
+        // Toggle dropdown visibility
+        function toggleDropdown(dropdownId) {
+            var dropdown = document.getElementById(dropdownId);
+            dropdown.classList.toggle('open');
+        }
+
+        // Function for navigating to different pages
+        function navigateTo(page) {
+            let url = '';
+            if (page === 'employees') {
+                url = 'register_employees.html';
+            } else if (page === 'enter') {
+                url = 'enter_products.html';
+            } else if (page === 'view') {
+                url = 'view_product.html';
+            } else if (page === 'categories') {
+                url = 'enter_categories.html';
+            } else if (page === 'inventory') {
+                url = 'view_inventory.html';  // Updated URL for inventory
+            } else if (page === 'suppliers') {
+                url = 'register_supplier.html';  // Updated URL for suppliers
+            } else if (page === 'enter_order') {
+                url = 'update_order.html';
+            } else if (page === 'view_order') {
+                url = 'view_order.html';
+            } else if (page === 'enter_sell') {
+                url = 'enter_sell.html';
+            } else if (page === 'view_sell') {
+                url = 'view_sell.html';
+            }
+            document.getElementById('contentFrame').src = url;
+            document.getElementById('welcomeMessage').style.display = 'none';
+            document.getElementById('contentFrame').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+
+

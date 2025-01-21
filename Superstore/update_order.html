@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Order</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e0f7fa; /* Light blue background */
+            font-family: 'Arial', sans-serif;
+            margin-top: 30px;
+        }
+
+        .container {
+            max-width: 600px;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #0277bd; /* Darker blue heading */
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            color: #01579b; /* Deep blue for labels */
+            font-size: 1rem;
+        }
+
+        .form-control {
+            border-radius: 4px;
+            box-shadow: none;
+            margin-bottom: 15px;
+            border-color: #4fc3f7; /* Light blue border for inputs */
+        }
+
+        .form-control:focus {
+            border-color: #0288d1;
+            box-shadow: 0 0 0 0.2rem rgba(2, 136, 209, 0.25);
+        }
+
+        .btn-primary {
+            background-color: #039be5; /* Light blue button */
+            border: none;
+            padding: 10px 20px;
+            width: 100%;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #0277bd; /* Darker blue on hover */
+        }
+
+        .alert {
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #81c784; /* Light green for success message */
+            color: white;
+        }
+
+        .alert-danger {
+            background-color: #e57373; /* Light red for error message */
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Update Order</h2>
+
+        <!-- Form to enter order details -->
+        <form id="orderForm">
+            <div class="form-group">
+                <label for="productName">Product Name</label>
+                <select class="form-control" id="productName" required>
+                    <!-- Dynamic product options will be inserted here -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="status">Order Status</label>
+                <select class="form-control" id="status" required>
+                    <option value="Received">Received</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Shipped">Shipped</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" class="form-control" id="quantity" placeholder="Enter Quantity" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Order</button>
+        </form>
+
+        <!-- Success message -->
+        <div id="successMessage" class="alert alert-success mt-4" style="display:none;">
+            Order updated successfully!
+        </div>
+
+        <!-- Error message -->
+        <div id="errorMessage" class="alert alert-danger mt-4" style="display:none;">
+            There was an error updating the order. Please try again.
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Fetch products from the API
+        fetch('http://127.0.0.1:5000/view_all_products')
+            .then(response => response.json())
+            .then(products => {
+                const productSelect = document.getElementById('productName');
+                // Clear existing options (if any)
+                productSelect.innerHTML = '';
+
+                // Add a default placeholder option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = 'Select a Product';
+                productSelect.appendChild(defaultOption);
+
+                // Populate the dropdown with product names
+                products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.Code; // Use product Code as value
+                    option.textContent = product.Name; // Display product Name
+                    productSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching products:', error);
+                const productSelect = document.getElementById('productName');
+                const option = document.createElement('option');
+                option.textContent = 'Error loading products';
+                productSelect.appendChild(option);
+            });
+
+        // Handle form submission
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Get input values
+            const productCode = document.getElementById('productName').value;
+            const status = document.getElementById('status').value;
+            const quantity = document.getElementById('quantity').value;
+
+            // Send request to the backend API to update order
+            fetch('http://127.0.0.1:5000/update_order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: productCode,
+                    status: status,
+                    quantity: quantity
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Backend Response:", data);
+
+                if (data.status && data.status === "Order table updated.") {
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('errorMessage').style.display = 'none';
+                    document.getElementById('orderForm').reset();
+                } else {
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('successMessage').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('successMessage').style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+

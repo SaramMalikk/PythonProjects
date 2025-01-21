@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f0f8ff; /* Light blue background */
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            background-color: #ffffff; /* White background for the container */
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            max-width: 600px; /* Limit the width of the form */
+            margin: 50px auto; /* Center the form on the page */
+        }
+
+        h2 {
+            color: #3498db; /* Light blue for the title */
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9; /* Darker blue on hover */
+        }
+
+        .alert {
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .alert-info {
+            background-color: #e7f5ff; /* Light blue background for info messages */
+            color: #3498db;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da; /* Light red background for error messages */
+            color: #e74c3c;
+        }
+
+        .alert-success {
+            background-color: #d4edda; /* Light green background for success messages */
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mb-4">Add Product</h2>
+        <form id="productForm">
+            <div class="form-group">
+                <label for="name">Product Name</label>
+                <input type="text" class="form-control" id="name" placeholder="Enter product name" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" class="form-control" id="description" placeholder="Enter product description" required>
+            </div>
+            <div class="form-group">
+                <label for="sellPrice">Sell Price</label>
+                <input type="number" class="form-control" id="sellPrice" placeholder="Enter sell price" required>
+            </div>
+            <div class="form-group">
+                <label for="purchasePrice">Purchase Price</label>
+                <input type="number" class="form-control" id="purchasePrice" placeholder="Enter purchase price" required>
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select class="form-control" id="category" required>
+                    <option value="">Select Category</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="supplier">Supplier</label>
+                <select class="form-control" id="supplier" required>
+                    <option value="">Select Supplier</option>
+                </select>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="addProduct()">Add Product</button>
+        </form>
+
+        <!-- Display success or error messages -->
+        <div id="message" class="mt-4"></div>
+    </div>
+
+    <script>
+        // Fetch categories from the server
+        function fetchCategories() {
+            fetch('http://127.0.0.1:5000/view_categories')
+            .then(response => response.json())
+            .then(data => {
+                const categorySelect = document.getElementById('category');
+                // Clear the dropdown
+                categorySelect.innerHTML = '<option value="">Select Category</option>';
+
+                // Add categories to the dropdown
+                data.Category_info.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.Category_id; // Use Category_id as value
+                    option.textContent = category.Category; // Display Category name
+                    categorySelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching categories:', error);
+            });
+        }
+
+        // Fetch suppliers from the server
+        function fetchSuppliers() {
+            fetch('http://127.0.0.1:5000/view_suppliers')  // Ensure the correct API endpoint is used
+            .then(response => response.json())
+            .then(data => {
+                console.log('API Response:', data); // Log the response data for debugging
+
+                const supplierSelect = document.getElementById('supplier');
+                // Clear the dropdown
+                supplierSelect.innerHTML = '<option value="">Select Supplier</option>';
+
+                // Check if the API response contains Suppliers_Info and it's an array
+                if (data.Suppliers_Info && Array.isArray(data.Suppliers_Info)) {
+                    // Add suppliers to the dropdown
+                    data.Suppliers_Info.forEach(supplier => {
+                        const option = document.createElement('option');
+                        option.value = supplier.Email; // Set the Email as value (or any unique identifier)
+                        option.textContent = supplier.Firstname; // Display Firstname in the dropdown
+                        supplierSelect.appendChild(option);
+                    });
+                } else {
+                    // If Suppliers_Info doesn't exist or is not an array, log an error
+                    console.error('Unexpected API response format:', data);
+                    supplierSelect.innerHTML = '<option value="">No suppliers available</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching suppliers:', error);
+                const supplierSelect = document.getElementById('supplier');
+                supplierSelect.innerHTML = '<option value="">Error fetching suppliers</option>';
+            });
+        }
+
+        // Call fetchCategories and fetchSuppliers on page load
+        window.onload = function() {
+            fetchCategories();
+            fetchSuppliers();
+        };
+
+        // Add new product
+        function addProduct() {
+            // Clear previous messages
+            document.getElementById('message').innerHTML = '';
+
+            // Validate form fields
+            const name = document.getElementById('name').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const sellPrice = document.getElementById('sellPrice').value.trim();
+            const purchasePrice = document.getElementById('purchasePrice').value.trim();
+            const category = document.getElementById('category').value;
+            const supplier = document.getElementById('supplier').value;
+
+            if (!name || !description || !sellPrice || !purchasePrice || !category || !supplier) {
+                document.getElementById('message').innerHTML = '<div class="alert alert-danger">Please fill in all fields.</div>';
+                return;
+            }
+
+            const productData = {
+                name: name,
+                description: description,
+                sellPrice: sellPrice,
+                purchasePrice: purchasePrice,
+                category: category,
+                supplier: supplier
+            };
+
+            fetch('http://127.0.0.1:5000/enter_products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(productData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Response data:", data); // Log for debugging
+
+                // Display success message from the server response
+                const messageDiv = document.getElementById('message');
+                if (data.Status) {  // If API returns a Status field
+                    messageDiv.innerHTML = `<div class="alert alert-success">${data.Status}</div>`;
+                } else {  // Fallback to show the entire response
+                    messageDiv.innerHTML = `<div class="alert alert-success">${JSON.stringify(data)}</div>`;
+                }
+
+                // Clear the form fields after successful submission
+                document.getElementById('productForm').reset();
+            })
+            .catch(error => {
+                console.error('Fetch error:', error); // Improved error logging
+                document.getElementById('message').innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Information</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* Custom CSS for light blue and white theme */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff; /* Light blue background */
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin-top: 50px;
+            padding: 30px;
+            background-color: #ffffff; /* White background for the container */
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #0056b3; /* Dark blue for the header */
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .form-control {
+            display: block;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 400px;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #007bff; /* Light blue border */
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: #007bff; /* Light blue button */
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        .alert {
+            margin-top: 20px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        .table-container {
+            margin-top: 40px;
+        }
+
+        #order-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        #order-table th,
+        #order-table td {
+            text-align: center;
+            padding: 12px;
+            font-size: 16px;
+        }
+
+        #order-table th {
+            background-color: #f1f1f1; /* Light grey background for table headers */
+            color: #333;
+            font-weight: bold;
+        }
+
+        #order-table td {
+            background-color: #ffffff; /* White background for table cells */
+            color: #333;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #order-table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            .form-control {
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            #order-table th,
+            #order-table td {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Fetch Orders by Date</h2>
+
+    <!-- Date input form -->
+    <div class="mb-3">
+        <label for="orderDate">Enter Order Date:</label>
+        <input type="date" class="form-control" id="orderDate">
+    </div>
+
+    <!-- Button to trigger fetching of orders -->
+    <button class="btn btn-primary" onclick="fetchOrders()">Fetch Orders</button>
+
+    <!-- Error message container -->
+    <div id="error-message" class="alert alert-danger mt-3" role="alert" style="display: none;"></div>
+
+    <!-- Table for displaying orders -->
+    <div class="table-container">
+        <table class="table table-bordered mt-4" id="order-table">
+            <thead id="order-table-head" style="display: none;">
+                <tr>
+                    <th>Order Date</th>
+                    <th>Product Code</th>
+                    <th>Quantity</th>
+                    <th>Status</th>
+                    <th>Supplier ID</th>
+                </tr>
+            </thead>
+            <tbody id="orders-table-body">
+                <!-- Order rows will be inserted here dynamically -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Bootstrap JS and jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Function to fetch data from the backend and populate the table
+    function fetchOrders() {
+        const orderDate = document.getElementById('orderDate').value; // Get the user-entered date
+
+        // Hide any previous error message
+        document.getElementById('error-message').style.display = 'none';
+
+        // Check if the date is entered
+        if (!orderDate) {
+            showError('Please enter a date.');
+            return;
+        }
+
+        const apiUrl = 'http://127.0.0.1:5000/view_order'; // Backend API URL
+        const requestData = {
+            date: orderDate
+        };
+
+        // Making the API call using Fetch
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData),
+        })
+        .then(response => response.json()) // Parse the JSON response
+        .then(data => {
+            // Check if the response contains orders
+            const tableBody = document.getElementById('orders-table-body');
+
+            // Clear any existing rows in the table
+            tableBody.innerHTML = '';
+
+            // Check if the response contains orders
+            if (data.Orders_Info && data.Orders_Info.length > 0) {
+                const orders = data.Orders_Info;
+
+                // Show the table headers after fetching the data
+                document.getElementById('order-table-head').style.display = 'table-header-group';
+
+                // Loop through the orders and add rows to the table
+                orders.forEach(order => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${formatDate(order.Order_date)}</td>
+                        <td>${order.Product_code}</td>
+                        <td>${order.Quantity}</td>
+                        <td>${order.Status}</td>
+                        <td>${order.Supplier_id}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                showError('No orders found for this date.');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching data:', error);
+            showError('Error fetching order data.');
+        });
+    }
+
+    // Function to format the Order_date into a more readable format
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options);
+    }
+
+    // Function to show error message on the page
+    function showError(message) {
+        const errorMessageDiv = document.getElementById('error-message');
+        errorMessageDiv.textContent = message;
+        errorMessageDiv.style.display = 'block'; // Show error message
+    }
+</script>
+
+</body>
+</html>
+
+
+

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Supplier</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* General styling */
+        body {
+            background-color: #f0f8ff;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 500px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #0066cc;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        .btn-primary {
+            background-color: #0066cc;
+            border-color: #0066cc;
+        }
+        #responseMessage {
+            margin-top: 15px;
+        }
+        /* View Supplier button styling */
+        .view-supplier-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #add8e6;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+        }
+        .view-supplier-btn:hover {
+            background-color: #87cefa;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- View Supplier button positioned at the corner -->
+    <a href="http://localhost:63342/Superstore/view_supplier.html" class="btn view-supplier-btn">View Supplier</a>
+
+    <div class="container">
+        <h2>Enter Supplier</h2>
+        <!-- Supplier entry form -->
+        <form id="supplierForm">
+            <div class="form-group">
+                <label for="firstname">First Name</label>
+                <input type="text" class="form-control" id="firstname" required>
+            </div>
+            <div class="form-group">
+                <label for="lastname">Last Name</label>
+                <input type="text" class="form-control" id="lastname" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="text" class="form-control" id="phone" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Submit</button>
+        </form>
+
+        <!-- Response message -->
+        <div id="responseMessage"></div>
+    </div>
+
+    <script>
+        // Handle form submission
+        document.getElementById('supplierForm').addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent form from reloading the page
+
+            // Collect form data
+            const supplierData = {
+                firstname: document.getElementById('firstname').value,
+                lastname: document.getElementById('lastname').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value
+            };
+
+            // Send a POST request to the API
+            fetch('http://127.0.0.1:5000/enter_suppliers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(supplierData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the response message
+                if (data.Status) {
+                    document.getElementById('responseMessage').innerHTML =
+                        `<div class="alert alert-success">${data.Status}</div>`;
+                    // Clear the form after successful submission
+                    document.getElementById('supplierForm').reset();
+                } else {
+                    document.getElementById('responseMessage').innerHTML =
+                        `<div class="alert alert-warning">Unexpected response format.</div>`;
+                }
+            })
+            .catch(error => {
+                // Display error message if something goes wrong
+                document.getElementById('responseMessage').innerHTML =
+                    `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            });
+        });
+    </script>
+
+</body>
+</html>

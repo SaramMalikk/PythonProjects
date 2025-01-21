@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Bill</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e9f7ff;
+            margin-top: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #0056b3;
+            margin-bottom: 30px;
+        }
+
+        .alert {
+            display: none;
+        }
+
+        .form-label {
+            font-weight: bold;
+        }
+
+        .form-control, .form-select {
+            border: 1px solid #cce4ff;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background-color: #66b3ff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #3399ff;
+        }
+
+        .receipt {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .receipt h4 {
+            color: #0056b3;
+        }
+
+        .table {
+            margin-top: 20px;
+        }
+
+        .table thead {
+            background-color: #0056b3;
+            color: white;
+        }
+
+        /* Error Styling */
+        .is-invalid {
+            border-color: #dc3545;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875em;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Create Bills</h2>
+
+    <!-- Alert Area -->
+    <div id="alert" class="alert alert-danger" role="alert"></div>
+
+    <!-- Form Section -->
+    <div id="formSection">
+        <!-- Payment Method Input -->
+        <div class="mb-3">
+            <label for="paymentMethod" class="form-label">Payment Method:</label>
+            <input type="text" id="paymentMethod" class="form-control" placeholder="Enter payment method">
+            <div id="paymentError" class="error-message">Please enter the payment method.</div>
+        </div>
+
+        <!-- Product Inputs -->
+        <div id="productInputs">
+            <div class="product-entry mb-3">
+                <label class="form-label">Product Name:</label>
+                <select class="form-select product-name">
+                    <option value="" disabled selected>Select a product</option>
+                </select>
+                <div class="error-message product-error">Please select a product.</div>
+
+                <label class="form-label mt-2">Quantity:</label>
+                <input type="number" class="form-control product-quantity" placeholder="Enter quantity" min="1">
+                <div class="error-message quantity-error">Please enter a valid quantity.</div>
+            </div>
+        </div>
+
+        <!-- Add Product Button -->
+        <button class="btn btn-secondary mb-3" onclick="addProductInput()">Add Another Product</button>
+
+        <!-- Submit Button -->
+        <button class="btn btn-primary" onclick="submitBill()">Submit Bill</button>
+    </div>
+
+    <!-- Receipt Section -->
+    <div id="receipt" class="receipt">
+        <h4>Receipt</h4>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Quantity</th>
+                <th>Total Price</th>
+            </tr>
+            </thead>
+            <tbody id="receiptDetails"></tbody>
+        </table>
+        <h5>Total Amount: <span id="totalAmount"></span></h5>
+        <!-- Refresh Button -->
+        <button class="btn btn-secondary" onclick="refreshForm()">Create Another Bill</button>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let selectedProducts = []; // Track selected product codes
+    let selectedQuantities = []; // Track selected quantities
+
+    // Fetch products from the server
+    async function fetchProducts() {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/view_all_products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: ''
+            });
+            const data = await response.json();
+            return Array.isArray(data) ? data : [];
+        } catch (error) {
+            console.error("Error fetching products:", error);
+            return [];
+        }
+    }
+
+    // Populate a single dropdown with product options
+    async function populateSingleDropdown(dropdown, selectedCode) {
+        const products = await fetchProducts();
+        dropdown.innerHTML = '<option value="" disabled selected>Select a product</option>';
+
+        products.forEach(product => {
+            const option = document.createElement('option');
+            option.value = product.Code;
+            option.textContent = product.Name;
+
+            if (selectedCode && selectedCode === product.Code) {
+                option.selected = true;
+            }
+
+            dropdown.appendChild(option);
+        });
+    }
+
+    // Populate all existing dropdowns (only during initial load)
+    async function populateProductDropdowns() {
+        const products = await fetchProducts();
+        const productNames = document.querySelectorAll('.product-name');
+
+        productNames.forEach((dropdown, index) => {
+            const selectedCode = selectedProducts[index];
+            dropdown.innerHTML = '<option value="" disabled selected>Select a product</option>';
+
+            products.forEach(product => {
+                const option = document.createElement('option');
+                option.value = product.Code;
+                option.textContent = product.Name;
+
+                if (selectedCode && selectedCode === product.Code) {
+                    option.selected = true;
+                }
+
+                dropdown.appendChild(option);
+            });
+
+            // Restore previously selected quantity
+            const quantityInput = dropdown.closest('.product-entry').querySelector('.product-quantity');
+            if (selectedQuantities[index]) {
+                quantityInput.value = selectedQuantities[index];
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        populateProductDropdowns();
+    });
+
+    // Add a new product input section
+    async function addProductInput() {
+        // Save current selections before adding a new input
+        saveSelectedProducts();
+
+        const productInputs = document.getElementById('productInputs');
+        const newProductDiv = document.createElement('div');
+        newProductDiv.classList.add('product-entry', 'mb-3');
+        newProductDiv.innerHTML = `
+            <label class="form-label">Product Name:</label>
+            <select class="form-select product-name">
+                <option value="" disabled selected>Select a product</option>
+            </select>
+            <div class="error-message product-error">Please select a product.</div>
+
+            <label class="form-label mt-2">Quantity:</label>
+            <input type="number" class="form-control product-quantity" placeholder="Enter quantity" min="1">
+            <div class="error-message quantity-error">Please enter a valid quantity.</div>
+        `;
+        productInputs.appendChild(newProductDiv);
+
+        // Populate the newly added dropdown without affecting existing ones
+        const newDropdown = newProductDiv.querySelector('.product-name');
+        await populateSingleDropdown(newDropdown, null);
+    }
+
+    // Save the current selections to the arrays
+    function saveSelectedProducts() {
+        const productEntries = document.querySelectorAll('.product-entry');
+        selectedProducts = Array.from(productEntries).map(entry => {
+            const productDropdown = entry.querySelector('.product-name');
+            return productDropdown.value;
+        });
+
+        selectedQuantities = Array.from(productEntries).map(entry => {
+            const quantityInput = entry.querySelector('.product-quantity');
+            return quantityInput.value;
+        });
+    }
+
+    // Validate and submit the bill
+    function submitBill() {
+        // Clear previous error messages
+        clearErrors();
+
+        const paymentMethod = document.getElementById('paymentMethod').value.trim();
+        let isValid = true;
+
+        if (!paymentMethod) {
+            showError('paymentError', 'Please enter the payment method.');
+            isValid = false;
+        }
+
+        const productEntries = document.querySelectorAll('.product-entry');
+        const products = [];
+
+        productEntries.forEach((entry, index) => {
+            const productDropdown = entry.querySelector('.product-name');
+            const quantityInput = entry.querySelector('.product-quantity');
+            const productError = entry.querySelector('.product-error');
+            const quantityError = entry.querySelector('.quantity-error');
+
+            const productCode = productDropdown.value;
+            const quantity = parseInt(quantityInput.value, 10);
+
+            if (!productCode) {
+                productError.style.display = 'block';
+                productDropdown.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            if (isNaN(quantity) || quantity < 1) {
+                quantityError.style.display = 'block';
+                quantityInput.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            if (productCode && !isNaN(quantity) && quantity >= 1) {
+                products.push({ code: productCode, quantity: quantity });
+            }
+        });
+
+        if (!isValid) {
+            showAlert('Please fill out all product details correctly.', 'danger');
+            return;
+        }
+
+        const requestData = { method: paymentMethod, products };
+
+        // Send data to backend
+        fetch('http://127.0.0.1:5000/enter_sell', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData),
+        })
+        .then(response => response.json())
+        .then(data => handleResponse(data))
+        .catch(error => {
+            console.error("Error communicating with the server:", error);
+            showAlert('Error communicating with the server.', 'danger');
+        });
+    }
+
+    // Handle the response from the server
+    function handleResponse(data) {
+        if (data.Error && data.Error.length > 0) {
+            const errorMessages = data.Error.map(err => err.Error).join('<br>');
+            showAlert(errorMessages, 'danger');
+            return;
+        }
+
+        if (data.Receipt && data.Total_Amount) {
+            document.getElementById('formSection').style.display = 'none';
+            const receiptDetails = document.getElementById('receiptDetails');
+            receiptDetails.innerHTML = '';
+
+            data.Receipt.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.Name}</td>
+                    <td>${item.Quantity}</td>
+                    <td>${item.Total_Price}</td>
+                `;
+                receiptDetails.appendChild(row);
+            });
+
+            document.getElementById('totalAmount').textContent = data.Total_Amount;
+            document.getElementById('receipt').style.display = 'block';
+        } else {
+            showAlert('Error creating bill. Please try again.', 'danger');
+        }
+    }
+
+    // Display an alert message
+    function showAlert(message, type = 'danger') {
+        const alert = document.getElementById('alert');
+        alert.classList.remove('alert-danger', 'alert-success');
+        alert.classList.add(`alert-${type}`);
+        alert.innerHTML = message;
+        alert.style.display = 'block';
+    }
+
+    // Show specific error message
+    function showError(elementId, message) {
+        const errorElement = document.getElementById(elementId);
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+    }
+
+    // Clear all error messages
+    function clearErrors() {
+        const errorMessages = document.querySelectorAll('.error-message');
+        errorMessages.forEach(error => {
+            error.style.display = 'none';
+        });
+
+        const invalidInputs = document.querySelectorAll('.is-invalid');
+        invalidInputs.forEach(input => {
+            input.classList.remove('is-invalid');
+        });
+
+        const alert = document.getElementById('alert');
+        alert.style.display = 'none';
+    }
+
+    // Refresh the form to create another bill
+    function refreshForm() {
+        document.getElementById('formSection').style.display = 'block';
+        document.getElementById('receipt').style.display = 'none';
+        document.getElementById('paymentMethod').value = '';
+        selectedProducts = [];
+        selectedQuantities = [];
+
+        // Clear all product entries except the first one
+        const productInputs = document.getElementById('productInputs');
+        productInputs.innerHTML = `
+            <div class="product-entry mb-3">
+                <label class="form-label">Product Name:</label>
+                <select class="form-select product-name">
+                    <option value="" disabled selected>Select a product</option>
+                </select>
+                <div class="error-message product-error">Please select a product.</div>
+
+                <label class="form-label mt-2">Quantity:</label>
+                <input type="number" class="form-control product-quantity" placeholder="Enter quantity" min="1">
+                <div class="error-message quantity-error">Please enter a valid quantity.</div>
+            </div>
+        `;
+
+        populateProductDropdowns();
+    }
+</script>
+</body>
+</html>
+
+
+

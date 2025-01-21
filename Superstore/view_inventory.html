@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Inventory</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        body {
+            background-color: #f1faff;
+            font-family: 'Arial', sans-serif;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin-top: 50px;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #66b3ff;  /* Light Blue */
+            margin-bottom: 30px;
+        }
+
+        h4 {
+            color: #66b3ff;  /* Light Blue */
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .form-control {
+            border-radius: 4px;
+            box-shadow: none;
+            font-size: 1rem;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        /* Table Styles */
+        .table {
+            margin-top: 20px;
+            background-color: #fafbfc;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .table th,
+        .table td {
+            text-align: center;
+            padding: 12px 15px;
+        }
+
+        .table th {
+            background-color: #f1faff;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .table td {
+            background-color: #ffffff;
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 12px;
+            margin-top: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .alert-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>View Product Inventory</h2>
+
+        <!-- Form to enter product code -->
+        <form id="inventoryForm">
+            <div class="form-group">
+                <label for="productCode">Product Code</label>
+                <input type="text" class="form-control" id="productCode" placeholder="Enter product code" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Fetch Inventory</button>
+        </form>
+
+        <!-- Table to display product details -->
+        <div id="inventoryDetails" class="mt-4" style="display:none;">
+            <h4>Product Details</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Purchase Price</th>
+                        <th>Sell Price</th>
+                        <th>Stock Available</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryTable">
+                    <!-- Dynamic data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Error message -->
+        <div id="errorMessage" class="alert alert-danger mt-3" style="display:none;">
+            There was an error fetching the product details. Please try again.
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Handle form submission
+        document.getElementById('inventoryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Get the product code from the input field
+            const productCode = document.getElementById('productCode').value;
+
+            // Send request to the backend API
+            fetch('http://127.0.0.1:5000/view_inventory', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ "code": productCode }) // Send the product code as JSON
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // Handle non-OK response (e.g., 400 or 500 status)
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Backend Response:", data); // Log the backend response for debugging
+
+                // Check if data contains Inventory_info
+                if (data.Inventory_info) {
+                    // Hide the error message (if visible)
+                    document.getElementById('errorMessage').style.display = 'none';
+
+                    // Show the inventory details section
+                    document.getElementById('inventoryDetails').style.display = 'block';
+
+                    // Insert product data into the table
+                    const inventoryTable = document.getElementById('inventoryTable');
+                    inventoryTable.innerHTML = `
+                        <tr>
+                            <td>${data.Inventory_info.Name}</td>
+                            <td>${data.Inventory_info.Purchase_price}</td>
+                            <td>${data.Inventory_info.Sell_price}</td>
+                            <td>${data.Inventory_info.Stock_available}</td>
+                        </tr>
+                    `;
+                } else {
+                    // Show error message if no inventory info is returned
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('inventoryDetails').style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error); // Log the error
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('inventoryDetails').style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
+

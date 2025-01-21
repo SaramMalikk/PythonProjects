@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Categories</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f0f8ff; /* Light blue background */
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            background-color: #ffffff; /* White background for the container */
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        h2 {
+            color: #3498db; /* Light blue for the title */
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+
+        .table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .table th, .table td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        .table th {
+            background-color: #3498db; /* Light blue header */
+            color: white;
+            font-size: 18px;
+        }
+
+        .table td {
+            background-color: #f9f9f9;
+            font-size: 16px;
+        }
+
+        .table tr:nth-child(even) td {
+            background-color: #f1f1f1; /* Alternate row color */
+        }
+
+        #message {
+            margin-top: 20px;
+        }
+
+        .alert {
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .alert-info {
+            background-color: #e7f5ff; /* Light blue background for info messages */
+            color: #3498db;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da; /* Light red background for error messages */
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mb-4">Product Categories</h2>
+
+        <!-- Table for displaying categories -->
+        <table class="table table-bordered" id="categoriesTable">
+            <thead>
+                <tr id="tableHeaders">
+                    <!-- Column names will be dynamically inserted here -->
+                </tr>
+            </thead>
+            <tbody id="categoryTableBody">
+                <!-- Categories will be inserted here dynamically -->
+            </tbody>
+        </table>
+
+        <!-- Error or success messages -->
+        <div id="message" class="mt-4"></div>
+    </div>
+
+    <!-- JavaScript to fetch and display categories -->
+    <script>
+        // Function to fetch categories and display them
+        function fetchCategories() {
+            fetch('http://127.0.0.1:5000/view_categories', {
+                method: 'GET', // Sending GET request to the API
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with status ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Categories data:", data); // Log data for debugging
+
+                const categoryTableBody = document.getElementById('categoryTableBody');
+                const messageDiv = document.getElementById('message');
+                const tableHeaders = document.getElementById('tableHeaders');
+
+                // If the API returns a list of categories
+                if (data.Category_info && Array.isArray(data.Category_info) && data.Category_info.length > 0) {
+                    // Clear previous messages or rows
+                    messageDiv.innerHTML = '';
+                    categoryTableBody.innerHTML = '';
+
+                    // Dynamically create table headers
+                    const headers = ['Categories', 'Category ID', 'Category Details', 'Parent Category ID'];
+                    headers.forEach(header => {
+                        const th = document.createElement('th');
+                        th.textContent = header;
+                        tableHeaders.appendChild(th);
+                    });
+
+                    // Loop through each category and create a row for it
+                    data.Category_info.forEach(category => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${category.Category}</td>
+                            <td>${category.Category_id}</td>
+                            <td>${category.Detail}</td>
+                            <td>${category.Parent_id ? category.Parent_id : 'N/A'}</td> <!-- Display Parent_id, or 'N/A' if null -->
+                        `;
+                        categoryTableBody.appendChild(row);
+                    });
+                } else {
+                    // Show a message if no categories are found
+                    messageDiv.innerHTML = '<div class="alert alert-info">No categories found.</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error); // Log error for debugging
+                const messageDiv = document.getElementById('message');
+                messageDiv.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            });
+        }
+
+        // Call fetchCategories function as soon as the page loads
+        window.onload = fetchCategories;
+    </script>
+</body>
+</html>
