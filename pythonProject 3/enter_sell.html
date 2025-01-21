@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Sales Data</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f7fa; /* Light background */
+            font-family: 'Arial', sans-serif; /* Clean font */
+        }
+        .container {
+            background-color: #ffffff; /* White background for the form */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            padding: 30px; /* Padding inside the container */
+            margin-top: 50px; /* Space above the container */
+        }
+        h1 {
+            font-size: 2rem; /* Larger heading */
+            color: #333; /* Darker text */
+            margin-bottom: 20px; /* Space below heading */
+        }
+        .form-control {
+            border-radius: 5px; /* Rounded input fields */
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2); /* Input shadow */
+        }
+        .btn-primary {
+            background-color: #007bff; /* Primary button color */
+            border-color: #007bff; /* Border color for button */
+        }
+        .btn-primary:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+            border-color: #0056b3; /* Darker border on hover */
+        }
+        #responseMessage {
+            margin-top: 20px; /* Space above response message */
+            font-size: 1.1rem; /* Slightly larger text for messages */
+            color: #d9534f; /* Red for error messages */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-center">Enter Sales Data</h1>
+
+    <form id="salesForm">
+        <div class="form-group">
+            <label for="priceInput">Sell Price:</label>
+            <input type="number" id="priceInput" class="form-control" placeholder="Enter price" required>
+        </div>
+        <div class="form-group">
+            <label for="goatIdInput">Goat ID:</label>
+            <input type="number" id="goatIdInput" class="form-control" placeholder="Enter Goat ID" required>
+        </div>
+        <div class="form-group">
+            <label for="remainingInput">Remaining:</label>
+            <input type="text" id="remainingInput" class="form-control" placeholder="Enter remaining (optional)">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Submit</button>
+    </form>
+
+    <div id="responseMessage" class="text-center"></div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Event listener for form submission
+    document.getElementById('salesForm').addEventListener('submit', async (event) => {
+        event.preventDefault();  // Prevent default form submission
+
+        const price = document.getElementById('priceInput').value;
+        const g_id = document.getElementById('goatIdInput').value;
+        const remaining = document.getElementById('remainingInput').value;
+
+        // Prepare data for API request
+        const requestData = {
+            price: parseFloat(price),  // Convert to number
+            g_id: parseInt(g_id),      // Convert to number
+            remaining: remaining ? remaining : ""  // Optional remaining
+        };
+
+        try {
+            const response = await fetch('http://127.0.0.1:5000/enter_sell', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                document.getElementById('responseMessage').textContent = 'Sale recorded successfully!';
+                document.getElementById('responseMessage').style.color = '#5cb85c'; // Green for success
+
+                // Clear input fields
+                document.getElementById('salesForm').reset();
+            } else {
+                document.getElementById('responseMessage').textContent = `Error: ${result.error || 'Something went wrong.'}`;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            document.getElementById('responseMessage').textContent = 'Network error. Please try again later.';
+        }
+    });
+</script>
+</body>
+</html>
+

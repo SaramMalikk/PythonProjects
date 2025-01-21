@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Dashboard</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            background: #343a40;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+        .sidebar h2 {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: #ffffff;
+            text-decoration: none;
+            transition: background 0.3s ease, transform 0.2s ease;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .sidebar a:hover {
+            background: #495057;
+            transform: translateX(5px);
+        }
+        .sidebar a i {
+            margin-right: 10px;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s ease;
+        }
+        .main-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #343a40;
+            font-weight: 700;
+        }
+        .project-title {
+            font-size: 1.5rem;
+            margin-top: 10px;
+            color: #6c757d;
+            font-style: italic;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            transition: transform 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-header {
+            background-color: #007bff;
+            color: #ffffff;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px;
+            background: #343a40;
+            color: #ffffff;
+            position: fixed;
+            bottom: 0;
+            left: 250px;
+            width: calc(100% - 250px);
+        }
+        .overview-hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <h2>SideBar</h2>
+    <a href="http://localhost:63342/Shop%20Project/view_sell.html" target="content-frame" onclick="hideOverviewText()"><i class="fas fa-shopping-cart"></i> Sell Data</a>
+    <a href="http://localhost:63342/Shop%20Project/purchase.html" target="content-frame" onclick="hideOverviewText()"><i class="fas fa-shopping-bag"></i> Purchase Data</a>
+    <a href="http://localhost:63342/Shop%20Project/sell_purchase.html" target="content-frame" onclick="hideOverviewText()"><i class="fas fa-exchange-alt"></i> Overall Sell & Purchase</a>
+    <a href="http://localhost:63342/Shop%20Project/login.html" class="mt-3" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a> <!-- Logout Button -->
+</div>
+
+<div class="main-content">
+    <h1>Welcome to the Dashboard</h1>
+    <div class="project-title">Saram's Project</div>
+    <div class="card">
+        <div class="card-header">
+            Overview
+        </div>
+        <div class="card-body">
+            <div id="overview-text">
+                <h5>Dashboard Overview</h5>
+                <p>This dashboard provides a comprehensive overview of your shop's performance. Here are some key statistics:</p>
+                <ul>
+                    <li><strong>Total Sales:</strong> $</li>
+                    <li><strong>Total Purchases:</strong> $</li>
+                    <li><strong>Net Profit:</strong> $</li>
+                </ul>
+                <p>Use the links in the sidebar to navigate through different sections. Monitor your sales and purchase data effectively to make informed business decisions.</p>
+            </div>
+            <iframe id="content-frame" name="content-frame" style="width:100%; height: 500px; border:none; border-radius: 12px;"></iframe>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    const overviewText = document.getElementById('overview-text');
+
+    function hideOverviewText() {
+        overviewText.classList.add('overview-hidden');
+    }
+
+    // Optional: Function to handle logout action
+    function logout() {
+        // Clear any session or cookie data here if required
+        window.location.href = "http://localhost:63342/Shop%20Project/login.html";
+    }
+</script>
+</body>
+</html>
+

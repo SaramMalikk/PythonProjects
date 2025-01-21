@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Shop Info</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #e9ecef;
+            font-family: Arial, sans-serif;
+        }
+        .register-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-top: 100px;
+        }
+        .register-title {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .form-group label {
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="register-container">
+    <h2 class="register-title">Create Account</h2>
+    <form id="registerForm">
+        <div class="form-group">
+            <label for="firstname">First Name</label>
+            <input type="text" class="form-control" id="firstname" placeholder="Enter your first name" required>
+        </div>
+        <div class="form-group">
+            <label for="lastname">Last Name</label>
+            <input type="text" class="form-control" id="lastname" placeholder="Enter your last name" required>
+        </div>
+        <div class="form-group">
+            <label for="telephone">Telephone</label>
+            <input type="tel" class="form-control" id="telephone" placeholder="Enter your telephone number" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+    </form>
+    <div id="message" class="message"></div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const firstname = document.getElementById('firstname').value;
+        const lastname = document.getElementById('lastname').value;
+        const telephone = document.getElementById('telephone').value;
+        const password = document.getElementById('password').value;
+
+        fetch('http://127.0.0.1:5000/create_user', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ firstname: firstname, lastname: lastname, telephone: telephone, password: password }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle the API response here
+            if (data.status === "User created successfully") {
+                document.getElementById('message').textContent = 'Account created successfully!';
+                document.getElementById('message').style.color = 'green';
+                document.getElementById('registerForm').reset(); // Optional: Reset the form after successful registration
+            } else {
+                document.getElementById('message').textContent = data.Error || 'Account creation failed';
+                document.getElementById('message').style.color = 'red';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('message').textContent = 'An error occurred. Please try again.';
+            document.getElementById('message').style.color = 'red';
+        });
+    });
+</script>
+
+</body>
+</html>

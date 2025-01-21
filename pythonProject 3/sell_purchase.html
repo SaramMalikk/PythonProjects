@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Total Sell and Purchase</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fa;
+        }
+        .container {
+            margin-top: 50px;
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #007bff;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #e9ecef;
+        }
+        .custom-input {
+            width: 250px;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+        .custom-input:focus {
+            border-color: #0056b3;
+            box-shadow: 0 0 5px rgba(0, 86, 179, 0.5);
+        }
+        .custom-button {
+            background: #007bff;
+            color: #fff;
+            border-radius: 8px;
+        }
+        .custom-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-center">Total Sell and Purchase</h1>
+
+    <div class="form-group">
+        <label for="daysInput" class="mr-2">Enter Number of Days:</label>
+        <input type="number" id="daysInput" class="form-control custom-input" placeholder="Enter days" min="1" required>
+    </div>
+
+    <button id="fetchButton" class="btn custom-button d-block mx-auto">Search</button>
+
+    <div id="result" class="result" style="display: none;">
+        <h5>Total Sell and Purchase of <span id="days-count"></span> days:</h5>
+        <p><strong>Total Purchase:</strong> <span id="total-purchase"></span></p>
+        <p><strong>Total Sell:</strong> <span id="total-sell"></span></p>
+        <p><strong>Total Profit:</strong> <span id="total-profit"></span></p>
+        <p><strong>Purchase Remaining:</strong> <span id="purchase-remaining"></span></p>
+        <p><strong>Sell Remaining:</strong> <span id="sell-remaining"></span></p>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+    async function fetchSellPurchaseData(days) {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/tot_sell_purchase', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ days })
+            });
+
+            const data = await response.json();
+            displayResults(data.Information, days);
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+            alert(error.message);
+        }
+    }
+
+    function formatNumber(num) {
+        if (num === undefined || num === null) return 'N/A';
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function displayResults(data, days) {
+        document.getElementById('total-purchase').textContent = formatNumber(data[`Total_purchase of ${days} days`]);
+        document.getElementById('purchase-remaining').textContent = formatNumber(data['Purchase_remaining ']);
+        document.getElementById('total-sell').textContent = formatNumber(data[`Total_sell of ${days} days`]);
+        document.getElementById('sell-remaining').textContent = formatNumber(data['Sell_remaining ']);
+        document.getElementById('total-profit').textContent = formatNumber(data[`Total_Profit of ${days} days `]);
+
+        document.getElementById('days-count').textContent = days;
+        document.getElementById('result').style.display = 'block';
+    }
+
+    document.getElementById('fetchButton').addEventListener('click', () => {
+        const daysInput = document.getElementById('daysInput').value;
+        if (daysInput) {
+            fetchSellPurchaseData(daysInput);
+        } else {
+            alert('Please enter a valid number of days.');
+        }
+    });
+</script>
+
+</body>
+</html>

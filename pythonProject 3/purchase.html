@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchasing Data</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+        }
+        .container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+        h1 {
+            color: #007bff;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        .btn {
+            transition: background-color 0.3s ease;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            color: #fff;
+        }
+        .btn-yellow {
+            background-color: #ffc107; /* Yellow color */
+            border: none;
+            color: #fff;
+        }
+        .btn-yellow:hover {
+            background-color: #e0a800; /* Darker yellow on hover */
+        }
+        h5 {
+            font-weight: 500;
+        }
+        table {
+            margin-top: 20px;
+        }
+        .thead-light {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        th {
+            font-weight: 600;
+        }
+        .alert {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h1 class="text-center">Purchasing Data</h1>
+
+    <div class="row mb-4">
+        <div class="col">
+            <label for="daysInput">Enter Number of Days:</label>
+            <input type="number" id="daysInput" class="form-control" placeholder="Enter days" min="1" required>
+        </div>
+        <div class="col">
+            <button id="fetchButton" class="btn btn-primary mt-4">Search</button>
+            <button id="enterPurchaseButton" class="btn btn-yellow mt-4 ml-2" onclick="window.location.href='http://localhost:63342/Shop%20Project /enter_purchase.html'">Enter Purchase</button>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col">
+            <h5>Total Purchase in Last <span id="days-output"></span> Days: <span id="total-sales" class="font-weight-bold"></span></h5>
+        </div>
+        <div class="col">
+            <h5>Total Remaining: <span id="total-remaining" class="font-weight-bold"></span></h5>
+        </div>
+    </div>
+
+    <table class="table table-bordered">
+        <thead class="thead-light">
+            <tr>
+                <th>ID</th>
+                <th>Buy Price</th>
+                <th>Remaining</th>
+                <th>Buy Date</th>
+            </tr>
+        </thead>
+        <tbody id="purchase-table-body">
+            <!-- Purchase data will be inserted here -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Function to fetch purchase data from the API
+    async function fetchPurchaseData(days) {
+        try {
+            const response = await fetch('http://127.0.0.1:5000/view_purchase', {
+                method: 'POST',  // Change to POST method
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ days })  // Send days in the request body
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Network response was not ok: ${errorData.error || response.statusText}`);
+            }
+
+            const data = await response.json();
+            populateTable(data, days);
+        } catch (error) {
+            console.error('There was a problem with the fetch operation:', error);
+            alert(error.message);  // Show user-friendly alert
+        }
+    }
+
+    // Helper function to format numbers with commas
+    function formatNumber(num) {
+        const parsedNum = parseFloat(num);
+        if (isNaN(parsedNum)) return num;  // If not a number, return as is
+
+        // Format the number with commas
+        return parsedNum.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // Function to populate the table with purchase data
+    function populateTable(data, days) {
+        const tableBody = document.getElementById('purchase-table-body');
+        const totalSales = document.getElementById('total-sales');
+        const totalRemaining = document.getElementById('total-remaining');
+        const daysOutput = document.getElementById('days-output');
+
+        // Set total sales and remaining
+        totalSales.textContent = formatNumber(data["Total_sell of " + days + " days"]);
+        totalRemaining.textContent = formatNumber(data.Remaining);
+        daysOutput.textContent = days;
+
+        // Clear previous table data
+        tableBody.innerHTML = '';
+
+        // Loop through purchases and create table rows
+        data.Purchase.forEach(purchase => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${purchase.id}</td>
+                <td>${formatNumber(purchase.buy_price)}</td>
+                <td>${formatNumber(purchase.remaining)}</td>
+                <td>${purchase.buy_date}</td> <!-- Added buy_date column -->
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Event listener for the fetch button
+    document.getElementById('fetchButton').addEventListener('click', () => {
+        const daysInput = document.getElementById('daysInput').value;
+        if (daysInput) {
+            fetchPurchaseData(daysInput);
+        } else {
+            alert('Please enter a valid number of days.');
+        }
+    });
+</script>
+</body>
+</html>
+
